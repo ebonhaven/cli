@@ -1,3 +1,6 @@
+import { System } from './programs/system';
+import { Scatter } from './programs/scatter';
+
 const Chalk = require('chalk');
 let options = { enabled: true, level: 2 };
 const chalk = new Chalk.constructor(options);
@@ -20,7 +23,7 @@ function create() {
         convertEol: true,
         fontFamily: "monospace",
         fontSize: 16,
-        lineHeight: 1.2,
+        lineHeight: 1.1,
         theme: {
             background: '#A9A9A9'
         }
@@ -81,8 +84,9 @@ function initEvents() {
         if (!line) {
             return;
         }
+        process.running = true;
         console.log(line);
-        const recognizedCommands = ['help', 'login', 'logout', 'cmd'];
+        const recognizedCommands = ['help', 'login', 'logout', 'hi', 'info'];
         
         let args = line.text.toLowerCase().split(/\s+/);
         let commands = [];
@@ -95,14 +99,39 @@ function initEvents() {
         term.write('\r\n');
         if (commands.length == 0) {
             term.writeln(chalk.hex('#CAEBF2')('Unknown command: ' + line.text + '\n'));
+            process.running = false;
             return;
         }
 
-        let program = require('./programs')[commands[0]];
-        program(args);
+        let scatter, sys;
+        switch(commands[0]) {
+            case 'hi':
+                sys = new System();
+                sys.hi(args);
+                break;
+            case 'info':
+                sys = new System();
+                sys.info(args);
+                break;
+            case 'help':
+                sys = new System();
+                sys.help(args);
+                break;
+            case 'login':
+                scatter = new Scatter();
+                scatter.login(args);
+                break;
+            case 'logout':
+                scatter = new Scatter();
+                scatter.logout(args);
+                break;
+        }
+        // let program = require('./programs')[commands[0]];
+        // program(args);
     });
 
     term.on('complete', () => {
+        console.log('Complete');
         process.running = false;
         term.command = '';
         term.writeln('\n');

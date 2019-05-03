@@ -16,7 +16,7 @@ const network = {
 };
 
 const help = (args) => {
-    process.stdout.write(chalk.hex('#CAEBF2')(`Available comands: help`));
+    process.stdout.write(chalk.hex('#CAEBF2')(`Available comands: help, login, logout`));
     process.stdout.emit('complete');
 };
 

@@ -9,7 +9,16 @@ if (process.argv.includes('--debug')) {
 }
 
 browserify('js/index.js', options)
-    .transform("babelify", { presets: ["@babel/preset-env", "@babel/preset-react"], plugins: ["@babel/plugin-transform-runtime"]})
+    .transform("babelify", { 
+        presets: [
+            "@babel/preset-env",
+            "@babel/preset-react"
+        ], 
+        plugins: [
+            "@babel/plugin-transform-runtime",
+            "@babel/plugin-proposal-class-properties"
+        ]
+    })
     .transform("aliasify", { aliases: {
             readline: './js/shims/readline.js',
             'iconv-lite': './node_modules/browserify/lib/_empty.js'
