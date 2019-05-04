@@ -13,6 +13,8 @@ class Program {
 
     state = {
         lastFrameTime: null,
+        eventLoopPaused: null,
+        pauseUntil: null,
         eventQueue: [],
         eventLoop: null,
     };
@@ -31,6 +33,13 @@ class Program {
 
     queueFunction(callback, args) {
         this.addEventToQueue(this.eventNames.CALL_FUNCTION, { callback: callback, thisArg: args });
+    }
+
+    queuePause(ms = 'natural') {
+        if (ms == 'natural') {
+            ms = this.getRandomInteger(650, 780);
+        }
+        this.addEventToQueue(this.eventNames.PAUSE_FOR, { ms: ms });
     }
 
     addEventToQueue(eventName, eventArgs) {
@@ -59,6 +68,18 @@ class Program {
 
         this.state.eventLoop = raf(this.runEventLoop);
 
+        if (this.state.eventLoopPaused) {
+            return;
+        }
+
+        if (this.state.pauseUntil) {
+            if (nowTime < this.state.pauseUntil) {
+                return;
+            }
+
+            this.state.pauseUntil = null;
+        }
+
         const queue = [...this.state.eventQueue];
         const curEvent = queue.shift();
 
@@ -72,6 +93,10 @@ class Program {
             case this.eventNames.WRITE_CHARACTER:
                 const { character } = eventArgs;
                 process.stdout.write(chalk.hex('#CAEBF2')(`${character}`));
+                break;
+            case this.eventNames.PAUSE_FOR:
+                const { ms } = eventArgs;
+                this.state.pauseUntil = Date.now() + parseInt(ms);
                 break;
             case this.eventNames.CALL_FUNCTION:
                 const { callback, thisArg } = eventArgs;

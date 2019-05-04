@@ -16,28 +16,41 @@ class Scatter extends Program {
         let self = this;
         this.queueString(`Logging in...`);
         this.start();
-        let timedOut = false;
 
         ScatterJS.scatter.connect('Ebonhaven', this.network ).then(connected => {
-            if(!connected) return false;
+            if(!connected) {
+                this.errorHandler();
+                return false;
+            }
             // ScatterJS.someMethod();
             const scatter = ScatterJS.scatter;
-            const requiredFields = { accounts: [this.network] };
             let login = this.timedPromise(5000, this.getIdentity(scatter));
             login.then(() => {
                 const account = scatter.identity.accounts.find(x => x.blockchain === 'eos');
                 console.log(account);
-                this.queueString(`done`);
-                this.queueFunction(this.complete, self);
+                this.queueString(`done. ${account.name} connected`);
+                this.queueFunction(this.loginSuccess, self);
                 this.start();
             });
             login.catch((error) => {
-                this.queueString(`error. Try again`);
+                this.queueString(`error. Timed out`);
                 this.queueFunction(this.complete, self);
                 this.start();
             });
+        }, (error) => {
+            this.errorHandler();
         });
     };
+
+    loginSuccess() {
+        process.stdout.emit('login-success');
+    }
+
+    errorHandler() {
+        this.queueString(`error. Couldn't connect`);
+        this.queueFunction(this.complete, self);
+        this.start();
+    }
 
     getIdentity(scatter) {
         const requiredFields = { accounts: [this.network] };
@@ -46,31 +59,28 @@ class Scatter extends Program {
                 resolve();
             }, (error) => {
                 reject(error);
-                
             });
         });
     }
 
     logout(args) {
         let self = this;
+        this.queueString(`Logging out...`);
+        this.start();
         ScatterJS.scatter.connect('Ebonhaven', this.network ).then(connected => {
-            if(!connected) return false;
+            if(!connected) {
+                this.errorHandler();
+                return false;
+            } 
             // ScatterJS.someMethod();
             ScatterJS.scatter.forgetIdentity();
-            this.queueString(`You've been logged out`);
+            this.queueString(`done. Logged out`);
             this.queueFunction(this.complete, self);
             this.start();
+        }, (error) => {
+            this.errorHandler();
         });
     }
-
-    timeout = (ms, promise) => {
-        let timeout = new Promise((resolve, reject) => {
-            let id = setTimeout(() => {
-
-            }, ms);
-        })
-    }
-
 }
 
 export { Scatter };

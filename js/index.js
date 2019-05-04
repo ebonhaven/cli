@@ -32,12 +32,15 @@ function create() {
     term.newLine = function() {
         let value = term.command;
         term.command = '';
-        this.emit('newline', { text: value });
+        if ( value.split(' ').indexOf('clear') > -1 ) {
+            term.reset();
+            return;
+        } else {
+            this.emit('newline', { text: value });
+        }
     };
 
     term.command = '';
-
-    
 
     return term;
 }
@@ -86,7 +89,7 @@ function initEvents() {
         }
         process.running = true;
         console.log(line);
-        const recognizedCommands = ['help', 'login', 'logout', 'hi', 'info'];
+        const recognizedCommands = ['clear', 'help', 'login', 'logout', 'hi', 'info'];
         
         let args = line.text.toLowerCase().split(/\s+/);
         let commands = [];
@@ -128,6 +131,11 @@ function initEvents() {
         }
         // let program = require('./programs')[commands[0]];
         // program(args);
+    });
+
+    term.on('login-success', () => {
+        console.log('Login Success');
+        term.emit('complete');
     });
 
     term.on('complete', () => {

@@ -32,6 +32,12 @@ body {
     line-height: 1em;
 }
 
+.panel.left img {
+    width: 100%;
+    max-width: 455px;
+    height: auto;
+}
+
 .wrapper .panel.right {
     background-color: #A9A9A9;
     padding: 15px;
